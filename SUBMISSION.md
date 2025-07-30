@@ -30,6 +30,15 @@ I spent approximately 1 hour on this implementation, focusing on:
    - Always cites sources
    - Acknowledges when information is limited
    - Provides structured, clear responses
+4. **Source Quality Scoring**: Implemented an algorithm that scores sources based on:
+   - Domain authority (prioritizing .gov, .edu, reputable news sites)
+   - Content recency (dated content scores higher)
+   - Snippet quality (longer, more detailed snippets score higher)
+5. **Query Optimization**: Intelligent query rewriting that:
+   - Adds temporal context to time-sensitive queries
+   - Reformats comparison queries for better results
+   - Enhances vague queries with context words
+6. **Follow-up Question Generation**: AI suggests relevant next queries based on context
 
 ## Key Features Implemented
 
@@ -68,6 +77,16 @@ I spent approximately 1 hour on this implementation, focusing on:
 - **Concurrent Requests**: Could parallelize search and AI calls
 - **Token Optimization**: GPT-4o-mini provides good balance of quality/speed/cost
 - **Response Limiting**: Configurable number of search results to control costs
+- **Source Prioritization**: High-quality sources are prioritized to improve response accuracy
+
+## Testing
+
+Implemented unit tests covering:
+- Cache operations and expiry
+- Query optimization logic
+- Source quality scoring algorithm
+- Citation extraction
+- Basic integration testing
 
 ## Security Considerations
 

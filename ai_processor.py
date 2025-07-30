@@ -7,18 +7,53 @@ class AIProcessor:
     def __init__(self, api_key: str):
         self.client = OpenAI(api_key=api_key)
     
+    def score_source_quality(self, source: Dict[str, Any]) -> float:
+        """Score source quality based on various factors"""
+        score = 0.5  # Base score
+        
+        # Domain authority scoring
+        trusted_domains = ['.gov', '.edu', '.org', 'wikipedia.org', 'reuters.com', 
+                          'apnews.com', 'bbc.com', 'nytimes.com', 'nature.com']
+        domain = source.get('link', '').lower()
+        for trusted in trusted_domains:
+            if trusted in domain:
+                score += 0.3
+                break
+        
+        # Recency scoring
+        if source.get('date'):
+            score += 0.1
+        
+        # Content relevance (longer snippets usually more informative)
+        snippet_length = len(source.get('snippet', ''))
+        if snippet_length > 150:
+            score += 0.1
+        
+        return min(score, 1.0)
+    
     def generate_response_with_citations_stream(self, query: str, search_results: List[Dict[str, Any]], model: str = "gpt-4o-mini"):
         """
         Generate an AI response based on search results with citations, streaming the output.
         """
-        # Create context from search results
-        context_parts = []
+        # Score and sort search results by quality
+        scored_results = []
         for result in search_results:
+            score = self.score_source_quality(result)
+            scored_results.append({**result, 'quality_score': score})
+        
+        # Sort by quality score descending
+        scored_results.sort(key=lambda x: x['quality_score'], reverse=True)
+        
+        # Create context from search results with quality indicators
+        context_parts = []
+        for result in scored_results:
+            quality_indicator = "⭐" if result['quality_score'] > 0.7 else ""
             context_parts.append(
-                f"[{result['index']}] {result['title']}\n"
+                f"[{result['index']}] {result['title']} {quality_indicator}\n"
                 f"Source: {result['source']}\n"
                 f"Content: {result['snippet']}\n"
                 f"URL: {result['link']}\n"
+                f"Quality Score: {result['quality_score']:.2f}\n"
             )
         
         context = "\n".join(context_parts)
@@ -26,6 +61,7 @@ class AIProcessor:
         system_prompt = """You are a helpful AI assistant that provides comprehensive answers based on search results. 
         You must cite your sources using [number] format inline with your response.
         Always base your answers on the provided search results and cite them appropriately.
+        Pay special attention to sources marked with ⭐ as they have higher quality scores.
         If the search results don't contain enough information, acknowledge this limitation.
         Format your response in a clear, well-structured manner."""
         

@@ -2,19 +2,25 @@ import os
 from typing import List, Dict, Any
 from serpapi import GoogleSearch
 from datetime import datetime
+from query_optimizer import QueryOptimizer
 
 class SearchEngine:
     def __init__(self, api_key: str):
         self.api_key = api_key
+        self.query_optimizer = QueryOptimizer()
     
     def search(self, query: str, num_results: int = 5) -> List[Dict[str, Any]]:
         """
-        Perform a web search using SerpAPI
+        Perform a web search using SerpAPI with query optimization
         """
+        # Optimize query if needed
+        optimized_query, alternatives = self.query_optimizer.optimize_query(query)
+        
+        # Use optimized query
         params = {
             "api_key": self.api_key,
             "engine": "google",
-            "q": query,
+            "q": optimized_query,
             "num": num_results,
             "hl": "en",
             "gl": "us"
