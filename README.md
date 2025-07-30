@@ -1,90 +1,172 @@
 # Perplexity CLI
 
-A command-line interface clone of Perplexity that combines web search results with AI-powered responses and citations.
+A command-line interface that replicates the core functionality of Perplexity. It takes a user's query, fetches live search results from the web, and uses an AI model to synthesize a cited answer from the results.
 
 ## Features
 
-- **Web Search Integration**: Uses SerpAPI to fetch real-time search results from Google
-- **AI-Powered Responses**: Leverages OpenAI's GPT models to synthesize search results into comprehensive answers
-- **Streaming Responses**: Watch AI responses generate in real-time with live updates
-- **Inline Citations**: AI responses include numbered citations that link back to source materials
-- **Interactive & Command-Line Modes**: Use interactively or pass queries directly via command line
-- **Rich Terminal UI**: Beautiful formatting with colored output, tables, and progress indicators
-- **Smart Caching**: Reduces API costs with intelligent caching of search results and AI responses
-- **Follow-up Questions**: AI suggests relevant follow-up questions based on your query
-- **Multiple Models**: Support for different OpenAI models (gpt-4o-mini, gpt-4o, etc.)
+- **Web Search Integration**: Uses SerpAPI to fetch real-time search results from Google.
+- **AI-Powered Synthesis**: Leverages OpenAI's GPT models to generate a comprehensive answer based on the search results.
+- **Streaming Responses**: The AI's answer is streamed to the terminal word-by-word for an interactive experience.
+- **Inline Citations**: The generated answer includes numbered citations `[1]` that link back to the original sources.
+- **Follow-up Questions**: After providing an answer, the AI suggests relevant follow-up questions for deeper exploration.
+- **Rich Terminal UI**: Built with the `rich` library for a clean, modern interface with formatted tables, progress spinners, and color-coded text.
+- **Interactive & Single-Query Modes**: Can be run as an interactive session or with a single query from the command line.
+- **Simple Caching**: Caches search results to improve performance and reduce API costs for repeated queries.
+- **Configurable Model**: Allows the user to specify which OpenAI model to use (e.g., `gpt-4o-mini`, `gpt-4o`).
 
 ## Setup
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd perplexity-cli
-```
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd perplexity-cli
+    ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+2.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-3. Set up API keys:
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your API keys:
-- `SERPAPI_KEY`: Get from https://serpapi.com/
-- `OPENAI_API_KEY`: Get from https://platform.openai.com/
+3.  **Set up API keys:**
+    Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+    Edit the new `.env` file and add your API keys for SerpAPI and OpenAI.
 
 ## Usage
 
 ### Interactive Mode
+
+To start an interactive session, simply run:
 ```bash
 python cli.py
 ```
+You can then type your queries at the prompt. Type `exit` or `quit` to end the session.
 
 ### Command-Line Mode
+
+To get a single answer directly, use the `--query` or `-q` flag:
 ```bash
 python cli.py -q "What is quantum computing?"
 ```
 
 ### Options
-- `-q, --query`: Search query (if not provided, interactive mode is used)
-- `-r, --results`: Number of search results to fetch (default: 5)
-- `-m, --model`: OpenAI model to use (default: gpt-4o-mini)
-- `--no-cache`: Disable caching for this query
-- `--clear-cache`: Clear all cached data
 
-## How It Works
+-   `-q`, `--query`: The search query. If not provided, the tool runs in interactive mode.
+-   `-r`, `--results`: The number of search results to fetch (default: 5).
+-   `-m`, `--model`: The OpenAI model to use (default: `gpt-4o-mini`).
+-   `--no-cache`: Disables using the cache for the current query.
+-   `--clear-cache`: Clears all cached data.
 
-1. **Search Phase**: Queries are sent to SerpAPI which returns Google search results including titles, snippets, and URLs
-2. **AI Processing**: Search results are passed to GPT-4o-mini with instructions to synthesize a comprehensive answer
-3. **Citation Extraction**: The AI includes inline citations [1], [2], etc. which are parsed and linked to sources
-4. **Display**: Results are formatted using Rich library for an enhanced terminal experience
+### Examples
 
-## Technical Choices
+#### Basic Usage
+```bash
+# Simple query with default settings
+python cli.py -q "what is quantum computing"
 
-- **Python**: Chosen for rapid development and excellent library ecosystem
-- **Click**: Provides clean CLI interface with minimal boilerplate
-- **Rich**: Creates beautiful terminal output with tables, colors, and formatting
-- **SerpAPI**: Reliable search API with good documentation and free tier
-- **OpenAI GPT-4o-mini**: Fast, cost-effective model that handles synthesis well
-- **Citation System**: Regex-based citation extraction ensures accurate source attribution
+# Interactive mode - multiple queries in one session
+python cli.py
+# Then type your queries, use 'exit' to quit
+```
 
-## Architecture
+#### Test AI-Powered Features
 
-- `search_engine.py`: Handles SerpAPI integration and result formatting
-- `ai_processor.py`: Manages OpenAI API calls and citation extraction
-- `cli.py`: Main entry point with CLI logic and display formatting
+**1. Query Optimization (Automatic Temporal Context)**
+```bash
+# These queries automatically get optimized with current date/time
+python cli.py -q "latest news" --no-cache
+python cli.py -q "current events" --no-cache
+python cli.py -q "trending topics today" --no-cache
+```
 
-## Future Improvements
+**2. Source Quality Scoring (Look for ⭐ markers)**
+```bash
+# Prioritizes authoritative sources (.gov, .edu, major news)
+python cli.py -q "climate change research"
+python cli.py -q "NASA space missions"
+python cli.py -q "COVID-19 vaccine information"
+```
 
-With more time, I would add:
-- **Caching**: Cache search results and AI responses to reduce API calls
-- **Multiple Search Engines**: Add support for Bing, DuckDuckGo, etc.
-- **Streaming Responses**: Stream AI responses as they're generated
-- **Export Functionality**: Save responses to markdown/PDF
-- **Advanced Queries**: Support for filters, date ranges, and site-specific searches
-- **Local LLM Option**: Support for Ollama or other local models
-- **Web UI**: Simple Flask/FastAPI web interface
-- **Tests**: Comprehensive test suite with mocked API responses
+**3. Follow-up Question Generation**
+```bash
+# Complex queries that generate intelligent follow-ups
+python cli.py -q "explain quantum computing"
+python cli.py -q "how does photosynthesis work"
+python cli.py -q "what is blockchain technology"
+```
+
+#### Advanced Options
+
+**Different AI Models**
+```bash
+# Default fast model
+python cli.py -q "explain neural networks"
+
+# More powerful model for complex queries
+python cli.py -q "compare RISC vs CISC architectures" -m gpt-4o -r 10
+```
+
+**Control Search Results**
+```bash
+# Fewer results for quick answers
+python cli.py -q "Python vs JavaScript" -r 3
+
+# More results for comprehensive research
+python cli.py -q "machine learning algorithms" -r 10
+```
+
+**Caching Controls**
+```bash
+# First run - fetches fresh results
+python cli.py -q "test query"
+
+# Second run - uses cache (notice "Using cached results" message)
+python cli.py -q "test query"
+
+# Force fresh results
+python cli.py -q "breaking news today" --no-cache
+
+# Clear all cached data
+python cli.py --clear-cache
+```
+
+#### Real-World Test Queries
+
+**Company Research**
+```bash
+python cli.py -q "What is OpenAI and what do they do?"
+python cli.py -q "Tell me about Anthropic AI company"
+```
+
+**Technical Questions**
+```bash
+python cli.py -q "How to implement binary search in Python"
+python cli.py -q "Explain REST API best practices"
+python cli.py -q "What are microservices architecture patterns"
+```
+
+**Current Events (with --no-cache for freshness)**
+```bash
+python cli.py -q "What happened in tech news today" --no-cache
+python cli.py -q "Latest AI breakthroughs 2024" --no-cache
+```
+
+**Comparison Queries (Tests Query Optimization)**
+```bash
+python cli.py -q "React vs Vue vs Angular"
+python cli.py -q "AWS vs Google Cloud vs Azure comparison"
+```
+
+#### Run the Demo
+```bash
+# See all features in action with a guided demo
+python demo.py
+```
+
+#### Run Tests
+```bash
+# Run the test suite
+python run_tests.py
+```

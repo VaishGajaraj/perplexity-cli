@@ -1,104 +1,42 @@
 # Perplexity CLI - Submission Details
 
-## Time Spent & Approach
+## How I Spent My Time
 
-I spent approximately 1 hour on this implementation, focusing on:
+My time was primarily focused on building a robust and user-friendly application that successfully replicates Perplexity's core value. The breakdown was roughly:
 
-1. **Core Functionality (40%)**: Building the search integration and AI response generation with proper citation handling
-2. **User Experience (30%)**: Creating a polished CLI interface with Rich library for beautiful terminal output
-3. **Performance (20%)**: Implementing caching to reduce API calls and improve response times
-4. **Documentation (10%)**: Writing clear setup instructions and code documentation
+1.  **Core Functionality (50%):** The highest priority was ensuring the main workflow was solid: fetching search results, passing them to an LLM, and generating a useful, cited answer. This involved integrating the SerpAPI and OpenAI libraries and ensuring the data flowed correctly between them.
 
-## Technical Decisions
+2.  **User Experience (40%):** A tool like this lives or dies by its interface. I invested significant time using the `rich` library to create a polished and intuitive CLI experience. This includes the live streaming of AI responses, formatted tables for search results, and clear, color-coded text that makes the output easy to read.
+
+3.  **Key Feature Enhancement (10%):** To more closely mimic Perplexity and demonstrate a deeper use of AI, I added the "follow-up questions" feature. This required a second, distinct call to the AI with a different prompt, adding more intelligence to the tool.
+
+## Technical Decisions & AI Techniques
 
 ### Architecture
-- **Modular Design**: Separated concerns into distinct modules (search_engine, ai_processor, cache_manager)
-- **Error Handling**: Comprehensive try-catch blocks with user-friendly error messages
-- **Caching System**: Simple file-based cache with TTL to balance performance and freshness
-
-### Libraries Chosen
-- **Click**: Industry-standard CLI framework, clean and declarative
-- **Rich**: Modern terminal formatting for enhanced UX
-- **SerpAPI**: Reliable search API with good free tier
-- **OpenAI**: GPT-4o-mini for fast, cost-effective responses
+I chose a modular design to separate concerns, making the code cleaner and easier to maintain. The key modules are:
+-   `cli.py`: The main entry point and orchestrator, responsible for the user interface and coordinating the other modules.
+-   `search_engine.py`: Handles all communication with the SerpAPI.
+-   `ai_processor.py`: Manages all interactions with the OpenAI API, including prompt construction.
+-   `cache_manager.py`: Implements a simple file-based cache to improve performance and reduce costs.
 
 ### AI Techniques Employed
 
-1. **Contextual Synthesis**: The AI is given all search results as context to generate comprehensive answers
-2. **Citation Extraction**: Regex-based parsing ensures accurate source attribution
-3. **Prompt Engineering**: Carefully crafted system prompts ensure the AI:
-   - Always cites sources
-   - Acknowledges when information is limited
-   - Provides structured, clear responses
-4. **Source Quality Scoring**: Implemented an algorithm that scores sources based on:
-   - Domain authority (prioritizing .gov, .edu, reputable news sites)
-   - Content recency (dated content scores higher)
-   - Snippet quality (longer, more detailed snippets score higher)
-5. **Query Optimization**: Intelligent query rewriting that:
-   - Adds temporal context to time-sensitive queries
-   - Reformats comparison queries for better results
-   - Enhances vague queries with context words
-6. **Follow-up Question Generation**: AI suggests relevant next queries based on context
+My focus was on effective **Prompt Engineering** to get the desired behavior from the LLM.
 
-## Key Features Implemented
+1.  **Cited Synthesis:** The core of the application. The system prompt strictly instructs the AI to synthesize an answer *based only on the provided search results* and to cite sources using the `[index]` format. This makes the output trustworthy and verifiable.
 
-1. **Dual Mode Operation**: Interactive REPL or single-query CLI
-2. **Rich Terminal UI**: Color-coded output, progress indicators, formatted tables
-3. **Smart Caching**: Reduces API costs and improves response time for repeated queries
-4. **Flexible Citations**: Inline citations with source linking
-5. **Comprehensive Search Results**: Shows both AI synthesis and raw search results
+2.  **Streaming Responses:** By setting `stream=True` in the API call and using `rich.live` in the front end, the application provides immediate feedback to the user, creating a much better experience than waiting for the full response to generate.
 
-## What I Would Add With More Time
+3.  **Follow-up Question Generation:** This is a separate, secondary AI call. After the main answer is generated, a different prompt is sent to the model, asking it to generate relevant follow-up questions. This demonstrates the ability to use an LLM for multiple, distinct tasks within a single workflow.
 
-### Technical Improvements
-1. **Streaming Responses**: Stream AI responses as they're generated for better UX
-2. **Parallel Processing**: Query multiple search engines simultaneously
-3. **Local LLM Support**: Integration with Ollama for privacy-conscious users
-4. **Advanced Search Filters**: Date ranges, site-specific searches, file type filters
-5. **Export Functionality**: Save sessions to Markdown/PDF/JSON
+## What I Would Do With More Time
 
-### AI Enhancements
-1. **Multi-turn Conversations**: Maintain context across queries
-2. **Source Quality Ranking**: AI evaluation of source credibility
-3. **Fact Checking**: Cross-reference claims across multiple sources
-4. **Summarization Modes**: Brief/detailed/technical response options
-5. **Language Detection**: Auto-translate non-English sources
+Given more time, I would focus on these areas:
 
-### Infrastructure
-1. **Comprehensive Test Suite**: Unit tests with mocked APIs, integration tests
-2. **Docker Container**: Easy deployment with all dependencies
-3. **Configuration Management**: YAML config files for advanced settings
-4. **Logging System**: Structured logs for debugging and analytics
-5. **Web Interface**: Simple Flask app for browser-based access
+1.  **Comprehensive Testing:** I would build out a full test suite with `pytest`, using mocks to simulate API calls. This would allow for rigorous testing of the `SearchEngine` and `AIProcessor` logic without incurring API costs.
 
-## Performance Considerations
+2.  **More Advanced Caching:** The current file-based cache is simple. I would upgrade it to a more robust solution like a local SQLite database, which would allow for more complex caching logic (e.g., caching based on the model used, setting expiration times).
 
-- **Caching**: 24-hour TTL balances freshness with API cost reduction
-- **Concurrent Requests**: Could parallelize search and AI calls
-- **Token Optimization**: GPT-4o-mini provides good balance of quality/speed/cost
-- **Response Limiting**: Configurable number of search results to control costs
-- **Source Prioritization**: High-quality sources are prioritized to improve response accuracy
+3.  **Error Handling and Resilience:** I would make the error handling more granular. For instance, if a single search result fails to load, the system could gracefully ignore it and proceed with the rest, rather than potentially failing the entire query.
 
-## Testing
-
-Implemented unit tests covering:
-- Cache operations and expiry
-- Query optimization logic
-- Source quality scoring algorithm
-- Citation extraction
-- Basic integration testing
-
-## Security Considerations
-
-- API keys stored in environment variables
-- No keys in source control (.env in .gitignore)
-- Input sanitization for search queries
-- No execution of arbitrary code from search results
-
-This implementation demonstrates proficiency in:
-- Modern Python development practices
-- API integration and error handling
-- CLI tool development
-- AI/LLM prompt engineering
-- User experience design
-- Performance optimization techniques
+4.  **Configuration File:** Instead of relying solely on command-line arguments, I would add a configuration file (e.g., `config.yaml`) to allow users to set their default model, number of results, and other preferences.

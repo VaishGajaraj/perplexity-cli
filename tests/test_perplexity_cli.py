@@ -4,9 +4,13 @@
 import unittest
 from unittest.mock import Mock, patch
 import os
+import sys
 import tempfile
 import json
 from datetime import datetime
+
+# Add parent directory to path to import our modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import our modules
 from cache_manager import CacheManager

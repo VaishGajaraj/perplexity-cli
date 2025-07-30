@@ -35,7 +35,8 @@ def extract_citations(text: str) -> list[int]:
 @click.option('--model', '-m', default='gpt-4o-mini', help='OpenAI model to use')
 @click.option('--no-cache', is_flag=True, help='Disable caching')
 @click.option('--clear-cache', is_flag=True, help='Clear all cached data')
-def main(query, results, model, no_cache, clear_cache):
+@click.option('--agent', is_flag=True, help='Enable autonomous agent mode for deep research')
+def main(query, results, model, no_cache, clear_cache, agent):
     """Perplexity CLI - AI-powered search with citations"""
     
     # Check for API keys
